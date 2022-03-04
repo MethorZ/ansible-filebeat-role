@@ -1,2 +1,101 @@
 ---
-# defaults file for roles/methorz.filebeat
+# Enable file beat
+filebeat_enabled: false
+
+# Filebeat package mode
+filebeat_package_mode: present # latest
+
+# Version
+filebeat_version: 6.x
+
+# Add modules for filebeat
+filebeat_modules:
+  - module: nginx
+    # Access logs
+    access:
+      enabled: "{{ filebeat_module_nginx_enabled }}}"
+
+      # Set custom paths for the log files. If left empty,
+      # Filebeat will choose the paths depending on your OS.
+      var.paths:
+
+      # Input configuration (advanced). Any input configuration option
+      # can be added under this section.
+      #input:
+
+      # Convert the timestamp to UTC. Requires Elasticsearch >= 6.1.
+      #var.convert_timezone: false
+
+    # Error logs
+    error:
+      enabled: true
+
+      # Set custom paths for the log files. If left empty,
+      # Filebeat will choose the paths depending on your OS.
+      var.paths:
+
+      # Input configuration (advanced). Any input configuration option
+      # can be added under this section.
+      #input:
+
+      # Convert the timestamp to UTC. Requires Elasticsearch >= 6.1.
+      #var.convert_timezone: false
+
+# Add inputs for filebeat
+filebeat_inputs: []
+
+
+
+# Name of the shipper that publishes network data. When not defined, hostname is used
+filebeat_name: ""
+
+# Tags of the shipper that added to output
+filebeat_tags:
+  - webtier
+  - adcontrol
+
+# Additional information added to the output
+filebeat_fields:
+  - env: production
+  - project: adcontrol
+
+# Processors used to reduce fields in the exported event
+filebeat_processors:
+  - add_fields:
+      when:
+        contains:
+          log.file.path: "adcontrol"
+      fields:
+        application: core
+
+filebeat_outputs:
+  elasticsearch:
+    # Boolean flag to enable or disable the output module.
+    enabled: true
+
+    # Array of hosts to connect to.
+    # Scheme and port can be left out and will be set to the default (http and 9200)
+    # In case you specify and additional path, the scheme is required: http://localhost:9200/path
+    # IPv6 addresses should always be defined as: https://[2001:db8::1]:9200
+    hosts: ["10.20.80.1:9200"]
+
+    # Optional index name. The default is "filebeat" plus date
+    # and generates [filebeat-]YYYY.MM.DD keys.
+    # In case you modify this pattern you must update setup.template.name and setup.template.pattern accordingly.
+    index: "%{[fields.project]:__project_undefined__}.%{[fields.application]:__application_undefined__}.%{[agent.hostname]}.%{[event.module]:app}.%{[fileset.name]:log}.%{+yyyy-MM-dd}"
+
+filebeat_setup:
+  template:
+    name: adcontrol-template
+    pattern: adcontrol.*
+  kibana:
+    host: "https://kibana.logging.adcheck.io"
+
+filebeat_logging:
+  level: info
+  to_files: true
+  files:
+     path: /var/log/filebeat
+     name: filebeat
+     keepfiles: 7
+     permissions: '0600'

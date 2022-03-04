@@ -1,0 +1,19 @@
+---
+# Elastic search keyserver
+__filebeat_elastic_search_keyserver: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+# Elastic search key id
+__filebeat_elastic_search_key_id: 46095ACC8548582C1A2699A9D27D666CD88E42B4
+
+# Elastic search repository
+__filebeat_elastic_search_repository: "deb https://artifacts.elastic.co/packages/{{ filebeat_version }}/apt stable main"
+
+# Filebeat paackge name
+__filebeat_package: filebeat
+
+# Filebeat configuration file
+__filebeat_configuration_path: /etc/filebeat/filebeat.yml
+
+# Filebeat nginx module path
+__filebeat_nginx_module_path: /etc/filebeat/modules.d/nginx.yml
+

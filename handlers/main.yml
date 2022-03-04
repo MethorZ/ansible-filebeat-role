@@ -1,2 +1,6 @@
 ---
-# handlers file for roles/methorz.filebeat
+# Restarts filebeat
+- name: restart filebeat
+  service:
+    name: filebeat
+    state: restarted

@@ -1,0 +1,39 @@
+---
+#
+# Default OS specific variable definitions / defaults
+#
+- block:
+  - name: INCLUDE_VARS | OS specific vars
+    include_vars: "{{ ansible_facts['os_family'] }}.yml"
+
+  - name: FACTS - Define keyserver for elastic search
+    set_fact:
+      filebeat_elastic_search_keyserver: "{{ __filebeat_elastic_search_keyserver }}"
+    when: filebeat_elastic_search_keyserver is not defined
+
+  - name: FACTS - Define key id for elastic search
+    set_fact:
+      filebeat_elastic_search_key_id: "{{ __filebeat_elastic_search_key_id }}"
+    when: filebeat_elastic_search_key_id is not defined
+
+  - name: FACTS - Define repository for elastic search
+    set_fact:
+      filebeat_elastic_search_repository: "{{ __filebeat_elastic_search_repository }}"
+    when: filebeat_elastic_search_repository is not defined
+
+  - name: FACTS - Define filebeat package
+    set_fact:
+      filebeat_package: "{{ filebeat_package }}"
+    when: filebeat_package is not defined
+
+  - name: FACTS - Define filebeat configuration path
+    set_fact:
+      filebeat_configuration_path: "{{ __filebeat_configuration_path }}"
+    when: filebeat_configuration_path is not defined
+
+  - name: FACTS - Define filebeat nginx module path
+    set_fact:
+      filebeat_nginx_module_path: "{{ __filebeat_nginx_module_path }}"
+    when: filebeat_nginx_module_path is not defined
+
+  when: filebeat_enabled

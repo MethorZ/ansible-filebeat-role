@@ -1,0 +1,793 @@
+######################## Filebeat Configuration ############################
+
+# This file is a full configuration example documenting all non-deprecated
+# options in comments. For a shorter configuration example, that contains only
+# the most common options, please see filebeat.yml in the same directory.
+#
+# You can find the full configuration reference here:
+# https://www.elastic.co/guide/en/beats/filebeat/index.html
+
+{% if filebeat_modules is defined %}
+#==========================  Modules configuration =============================
+filebeat.modules:
+{% for module in filebeat_modules %}
+{% if module.name = 'nginx' %}
+- module: nginx
+{% if module.access is defined %}
+  # Access logs
+  access:
+    enabled: {{ module.access.enabled }}
+
+{% if module.access.paths is defined %}
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    var.paths: {{ module.access.paths }}
+
+{% endif %}
+{% if module.access.input is defined %}
+    # Input configuration (advanced). Any input configuration option
+    # can be added under this section.
+    input: {{ module.access.input }}
+
+{% endif %}
+{% if module.access.convert_timezone is defined %}
+    # Convert the timestamp to UTC. Requires Elasticsearch >= 6.1.
+    #var.convert_timezone: false
+
+{% endif %}
+{% endif %}
+{% if module.error is defined %}
+  # error logs
+  error:
+    enabled: {{ module.error.enabled }}
+
+{% if module.error.paths is defined %}
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    var.paths: {{ module.error.paths }}
+
+{% endif %}
+{% if module.error.input is defined %}
+    # Input configuration (advanced). Any input configuration option
+    # can be added under this section.
+    input: {{ module.error.input }}
+
+{% endif %}
+{% if module.error.convert_timezone is defined %}
+    # Convert the timestamp to UTC. Requires Elasticsearch >= 6.1.
+    #var.convert_timezone: false
+{% endif %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if filebeat_inputs is defined %}
+#=========================== Filebeat inputs =============================
+
+# List of inputs to fetch data.
+filebeat.inputs:
+# Each - is an input. Most options can be set at the input level, so
+# you can use different inputs for various configurations.
+# Below are the input specific configurations.
+
+# Type of the files. Based on this the way the file is read is decided.
+# The different types cannot be mixed in one input
+#
+# Possible options are:
+# * log: Reads every line of the log file (default)
+# * stdin: Reads the standard in
+
+{% for input in filebeat_inputs %}
+{% endfor %}
+{% endif %}
+#========================== Filebeat autodiscover ==============================
+
+# Autodiscover allows you to detect changes in the system and spawn new modules
+# or inputs as they happen.
+
+#filebeat.autodiscover:
+  # List of enabled autodiscover providers
+#  providers:
+#    - type: docker
+#      templates:
+#        - condition:
+#            equals.docker.container.image: busybox
+#          config:
+#            - type: log
+#              paths:
+#                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+
+#========================= Filebeat global options ============================
+
+# Registry data path. If a relative path is used, it is considered relative to the
+# data path.
+#filebeat.registry.path: ${path.data}/registry
+
+# The permissions mask to apply on registry data, and meta files. The default
+# value is 0600.  Must be a valid Unix-style file permissions mask expressed in
+# octal notation.  This option is not supported on Windows.
+#filebeat.registry.file_permissions: 0600
+
+# The timeout value that controls when registry entries are written to disk
+# (flushed). When an unwritten update exceeds this value, it triggers a write
+# to disk. When flush is set to 0s, the registry is written to disk after each
+# batch of events has been published successfully. The default value is 0s.
+#filebeat.registry.flush: 0s
+
+# Starting with Filebeat 7.0, the registry uses a new directory format to store
+# Filebeat state. After you upgrade, Filebeat will automatically migrate a 6.x
+# registry file to use the new directory format. If you changed
+# filebeat.registry.path while upgrading, set filebeat.registry.migrate_file to
+# point to the old registry file.
+#filebeat.registry.migrate_file: ${path.data}/registry
+
+# By default Ingest pipelines are not updated if a pipeline with the same ID
+# already exists. If this option is enabled Filebeat overwrites pipelines
+# everytime a new Elasticsearch connection is established.
+#filebeat.overwrite_pipelines: false
+
+# How long filebeat waits on shutdown for the publisher to finish.
+# Default is 0, not waiting.
+#filebeat.shutdown_timeout: 0
+
+# Enable filebeat config reloading
+#filebeat.config:
+  #inputs:
+    #enabled: false
+    #path: inputs.d/*.yml
+    #reload.enabled: true
+    #reload.period: 10s
+  #modules:
+    #enabled: false
+    #path: modules.d/*.yml
+    #reload.enabled: true
+    #reload.period: 10s
+
+#================================ General ======================================
+{% if filebeat_name is defined %}
+# The name of the shipper that publishes the network data. It can be used to group
+# all the transactions sent by a single shipper in the web interface.
+# If this option is not defined, the hostname is used.
+name: {{ filebeat_name }}
+
+{% endif %}
+{% if filebeat_name is defined %}
+# The tags of the shipper are included in their own field with each
+# transaction published. Tags make it easy to group servers by different
+# logical properties.
+tags:
+{{ filebeat_tags }}
+
+{% endif %}
+{% if filebeat_name is defined %}
+# Optional fields that you can specify to add additional information to the
+# output. Fields can be scalar values, arrays, dictionaries, or any nested
+# combination of these.
+
+fields:
+{{ filebeat_fields }}
+
+{% endif %}
+# If this option is set to true, the custom fields are stored as top-level
+# fields in the output document instead of being grouped under a fields
+# sub-dictionary. Default is false.
+#fields_under_root: false
+
+# Internal queue configuration for buffering events to be published.
+#queue:
+  # Queue type by name (default 'mem')
+  # The memory queue will present all available events (up to the outputs
+  # bulk_max_size) to the output, the moment the output is ready to server
+  # another batch of events.
+  #mem:
+    # Max number of events the queue can buffer.
+    #events: 4096
+
+    # Hints the minimum number of events stored in the queue,
+    # before providing a batch of events to the outputs.
+    # The default value is set to 2048.
+    # A value of 0 ensures events are immediately available
+    # to be sent to the outputs.
+    #flush.min_events: 2048
+
+    # Maximum duration after which events are available to the outputs,
+    # if the number of events stored in the queue is < min_flush_events.
+    #flush.timeout: 1s
+
+  # The spool queue will store events in a local spool file, before
+  # forwarding the events to the outputs.
+  #
+  # Beta: spooling to disk is currently a beta feature. Use with care.
+  #
+  # The spool file is a circular buffer, which blocks once the file/buffer is full.
+  # Events are put into a write buffer and flushed once the write buffer
+  # is full or the flush_timeout is triggered.
+  # Once ACKed by the output, events are removed immediately from the queue,
+  # making space for new events to be persisted.
+  #spool:
+    # The file namespace configures the file path and the file creation settings.
+    # Once the file exists, the `size`, `page_size` and `prealloc` settings
+    # will have no more effect.
+    #file:
+      # Location of spool file. The default value is ${path.data}/spool.dat.
+      #path: "${path.data}/spool.dat"
+
+      # Configure file permissions if file is created. The default value is 0600.
+      #permissions: 0600
+
+      # File size hint. The spool blocks, once this limit is reached. The default value is 100 MiB.
+      #size: 100MiB
+
+      # The files page size. A file is split into multiple pages of the same size. The default value is 4KiB.
+      #page_size: 4KiB
+
+      # If prealloc is set, the required space for the file is reserved using
+      # truncate. The default value is true.
+      #prealloc: true
+
+    # Spool writer settings
+    # Events are serialized into a write buffer. The write buffer is flushed if:
+    # - The buffer limit has been reached.
+    # - The configured limit of buffered events is reached.
+    # - The flush timeout is triggered.
+    #write:
+      # Sets the write buffer size.
+      #buffer_size: 1MiB
+
+      # Maximum duration after which events are flushed if the write buffer
+      # is not full yet. The default value is 1s.
+      #flush.timeout: 1s
+
+      # Number of maximum buffered events. The write buffer is flushed once the
+      # limit is reached.
+      #flush.events: 16384
+
+      # Configure the on-disk event encoding. The encoding can be changed
+      # between restarts.
+      # Valid encodings are: json, ubjson, and cbor.
+      #codec: cbor
+    #read:
+      # Reader flush timeout, waiting for more events to become available, so
+      # to fill a complete batch as required by the outputs.
+      # If flush_timeout is 0, all available events are forwarded to the
+      # outputs immediately.
+      # The default value is 0s.
+      #flush.timeout: 0s
+
+# Sets the maximum number of CPUs that can be executing simultaneously. The
+# default is the number of logical CPUs available in the system.
+#max_procs:
+
+#================================ Processors ===================================
+
+processors:
+{{ filebeat_processors }}
+
+#============================= Elastic Cloud ==================================
+
+# These settings simplify using filebeat with the Elastic Cloud (https://cloud.elastic.co/).
+
+# The cloud.id setting overwrites the `output.elasticsearch.hosts` and
+# `setup.kibana.host` options.
+# You can find the `cloud.id` in the Elastic Cloud web UI.
+#cloud.id:
+
+# The cloud.auth setting overwrites the `output.elasticsearch.username` and
+# `output.elasticsearch.password` settings. The format is `<user>:<pass>`.
+#cloud.auth:
+
+{% if filebeat_outputs is defined %}
+#================================ Outputs ======================================
+
+# Configure what output to use when sending the data collected by the beat.
+
+{% if filebeat_outputs.elasticsearch is defined %}
+#-------------------------- Elasticsearch output -------------------------------
+output.elasticsearch:
+  # Boolean flag to enable or disable the output module.
+  enabled: {{ filebeat_outputs.elasticsearch.enabled }}
+
+  # Array of hosts to connect to.
+  # Scheme and port can be left out and will be set to the default (http and 9200)
+  # In case you specify and additional path, the scheme is required: http://localhost:9200/path
+  # IPv6 addresses should always be defined as: https://[2001:db8::1]:9200
+  hosts: {{ filebeat_outputs.elasticsearch.hosts }}
+
+  # Set gzip compression level.
+  #compression_level: 0
+
+  # Configure escaping HTML symbols in strings.
+  #escape_html: false
+
+  # Optional protocol and basic auth credentials.
+  #protocol: "https"
+  #username: "elastic"
+  #password: "changeme"
+
+  # Dictionary of HTTP parameters to pass within the URL with index operations.
+  #parameters:
+    #param1: value1
+    #param2: value2
+
+  # Number of workers per Elasticsearch host.
+  #worker: 1
+
+  # Optional index name. The default is "filebeat" plus date
+  # and generates [filebeat-]YYYY.MM.DD keys.
+  # In case you modify this pattern you must update setup.template.name and setup.template.pattern accordingly.
+  #index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+  index: {{ filebeat_outputs.elasticsearch.index }}
+
+  # Optional ingest node pipeline. By default no pipeline will be used.
+  #pipeline: ""
+
+  # Optional HTTP path
+  #path: "/elasticsearch"
+
+  # Custom HTTP headers to add to each request
+  #headers:
+  #  X-My-Header: Contents of the header
+
+  # Proxy server URL
+  #proxy_url: http://proxy:3128
+
+  # The number of times a particular Elasticsearch index operation is attempted. If
+  # the indexing operation doesn't succeed after this many retries, the events are
+  # dropped. The default is 3.
+  #max_retries: 3
+
+  # The maximum number of events to bulk in a single Elasticsearch bulk API index request.
+  # The default is 50.
+  #bulk_max_size: 50
+
+  # The number of seconds to wait before trying to reconnect to Elasticsearch
+  # after a network error. After waiting backoff.init seconds, the Beat
+  # tries to reconnect. If the attempt fails, the backoff timer is increased
+  # exponentially up to backoff.max. After a successful connection, the backoff
+  # timer is reset. The default is 1s.
+  #backoff.init: 1s
+
+  # The maximum number of seconds to wait before attempting to connect to
+  # Elasticsearch after a network error. The default is 60s.
+  #backoff.max: 60s
+
+  # Configure HTTP request timeout before failing a request to Elasticsearch.
+  #timeout: 90
+
+  # Use SSL settings for HTTPS.
+  #ssl.enabled: true
+
+  # Configure SSL verification mode. If `none` is configured, all server hosts
+  # and certificates will be accepted. In this mode, SSL-based connections are
+  # susceptible to man-in-the-middle attacks. Use only for testing. Default is
+  # `full`.
+  #ssl.verification_mode: full
+
+  # List of supported/valid TLS versions. By default all TLS versions from 1.0 up to
+  # 1.2 are enabled.
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+
+  # List of root certificates for HTTPS server verifications
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+
+  # Certificate for SSL client authentication
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+
+  # Client certificate key
+  #ssl.key: "/etc/pki/client/cert.key"
+
+  # Optional passphrase for decrypting the certificate key.
+  #ssl.key_passphrase: ''
+
+  # Configure cipher suites to be used for SSL connections
+  #ssl.cipher_suites: []
+
+  # Configure curve types for ECDHE-based cipher suites
+  #ssl.curve_types: []
+
+  # Configure what types of renegotiation are supported. Valid options are
+  # never, once, and freely. Default is never.
+  #ssl.renegotiation: never
+
+{% endif %}
+#================================= Paths ======================================
+
+# The home path for the filebeat installation. This is the default base path
+# for all other path settings and for miscellaneous files that come with the
+# distribution (for example, the sample dashboards).
+# If not set by a CLI flag or in the configuration file, the default for the
+# home path is the location of the binary.
+#path.home:
+
+# The configuration path for the filebeat installation. This is the default
+# base path for configuration files, including the main YAML configuration file
+# and the Elasticsearch template file. If not set by a CLI flag or in the
+# configuration file, the default for the configuration path is the home path.
+#path.config: ${path.home}
+
+# The data path for the filebeat installation. This is the default base path
+# for all the files in which filebeat needs to store its data. If not set by a
+# CLI flag or in the configuration file, the default for the data path is a data
+# subdirectory inside the home path.
+#path.data: ${path.home}/data
+
+# The logs path for a filebeat installation. This is the default location for
+# the Beat's log files. If not set by a CLI flag or in the configuration file,
+# the default for the logs path is a logs subdirectory inside the home path.
+#path.logs: ${path.home}/logs
+
+#================================ Keystore ==========================================
+# Location of the Keystore containing the keys and their sensitive values.
+#keystore.path: "${path.config}/beats.keystore"
+
+#============================== Dashboards =====================================
+# These settings control loading the sample dashboards to the Kibana index. Loading
+# the dashboards are disabled by default and can be enabled either by setting the
+# options here, or by using the `-setup` CLI flag or the `setup` command.
+#setup.dashboards.enabled: false
+
+# The directory from where to read the dashboards. The default is the `kibana`
+# folder in the home path.
+#setup.dashboards.directory: ${path.home}/kibana
+
+# The URL from where to download the dashboards archive. It is used instead of
+# the directory if it has a value.
+#setup.dashboards.url:
+
+# The file archive (zip file) from where to read the dashboards. It is used instead
+# of the directory when it has a value.
+#setup.dashboards.file:
+
+# In case the archive contains the dashboards from multiple Beats, this lets you
+# select which one to load. You can load all the dashboards in the archive by
+# setting this to the empty string.
+#setup.dashboards.beat: filebeat
+
+# The name of the Kibana index to use for setting the configuration. Default is ".kibana"
+#setup.dashboards.kibana_index: .kibana
+
+# The Elasticsearch index name. This overwrites the index name defined in the
+# dashboards and index pattern. Example: testbeat-*
+#setup.dashboards.index:
+
+# Always use the Kibana API for loading the dashboards instead of autodetecting
+# how to install the dashboards by first querying Elasticsearch.
+#setup.dashboards.always_kibana: false
+
+# If true and Kibana is not reachable at the time when dashboards are loaded,
+# it will retry to reconnect to Kibana instead of exiting with an error.
+#setup.dashboards.retry.enabled: false
+
+# Duration interval between Kibana connection retries.
+#setup.dashboards.retry.interval: 1s
+
+# Maximum number of retries before exiting with an error, 0 for unlimited retrying.
+#setup.dashboards.retry.maximum: 0
+
+
+#============================== Template =====================================
+
+# A template is used to set the mapping in Elasticsearch
+# By default template loading is enabled and the template is loaded.
+# These settings can be adjusted to load your own template or overwrite existing ones.
+
+# Set to false to disable template loading.
+#setup.template.enabled: true
+
+{% if filebeat_setup.template is defined %}
+# Template name. By default the template name is "filebeat-%{[agent.version]}"
+# The template name and pattern has to be set in case the Elasticsearch index pattern is modified.
+setup.template.name: "{{ filebeat_setup.template.name }}"
+
+{% endif %}
+# Template pattern. By default the template pattern is "-%{[agent.version]}-*" to apply to the default index settings.
+# The first part is the version of the beat and then -* is used to match all daily indices.
+# The template name and pattern has to be set in case the Elasticsearch index pattern is modified.
+setup.template.pattern: "{{ filebeat_setup.template.pattern }}"
+
+# Path to fields.yml file to generate the template
+#setup.template.fields: "${path.config}/fields.yml"
+
+# A list of fields to be added to the template and Kibana index pattern. Also
+# specify setup.template.overwrite: true to overwrite the existing template.
+# This setting is experimental.
+#setup.template.append_fields:
+#- name: field_name
+#  type: field_type
+
+# Enable JSON template loading. If this is enabled, the fields.yml is ignored.
+#setup.template.json.enabled: false
+
+# Path to the JSON template file
+#setup.template.json.path: "${path.config}/template.json"
+
+# Name under which the template is stored in Elasticsearch
+#setup.template.json.name: ""
+
+# Overwrite existing template
+#setup.template.overwrite: false
+
+# Elasticsearch template settings
+setup.template.settings:
+
+  # A dictionary of settings to place into the settings.index dictionary
+  # of the Elasticsearch template. For more details, please check
+  # https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+  #index:
+    #number_of_shards: 1
+    #codec: best_compression
+    #number_of_routing_shards: 30
+
+  # A dictionary of settings for the _source field. For more details, please check
+  # https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-source-field.html
+  #_source:
+    #enabled: false
+
+#============================== Setup ILM =====================================
+
+# Configure Index Lifecycle Management Index Lifecycle Management creates a
+# write alias and adds additional settings to the template.
+# The elasticsearch.output.index setting will be replaced with the write alias
+# if ILM is enabled.
+
+# Enabled ILM support. Valid values are true, false, and auto. The beat will
+# detect availabilty of Index Lifecycle Management in Elasticsearch and enable
+# or disable ILM support.
+setup.ilm.enabled: false
+
+# Configure the ILM write alias name.
+#setup.ilm.rollover_alias: "filebeat"
+
+# Configure rollover index pattern.
+#setup.ilm.pattern: "{now/d}-000001"
+
+
+#============================== Kibana =====================================
+
+# Starting with Beats version 6.0.0, the dashboards are loaded via the Kibana API.
+# This requires a Kibana endpoint configuration.
+setup.kibana:
+
+  # Kibana Host
+  # Scheme and port can be left out and will be set to the default (http and 5601)
+  # In case you specify and additional path, the scheme is required: http://localhost:5601/path
+  # IPv6 addresses should always be defined as: https://[2001:db8::1]:5601
+  host: "https://kibana.logging.adcheck.io"
+
+  # Optional protocol and basic auth credentials.
+  #protocol: "https"
+  #username: "elastic"
+  #password: "changeme"
+
+  # Optional HTTP path
+  #path: ""
+
+  # Use SSL settings for HTTPS. Default is true.
+  #ssl.enabled: true
+
+  # Configure SSL verification mode. If `none` is configured, all server hosts
+  # and certificates will be accepted. In this mode, SSL based connections are
+  # susceptible to man-in-the-middle attacks. Use only for testing. Default is
+  # `full`.
+  #ssl.verification_mode: full
+
+  # List of supported/valid TLS versions. By default all TLS versions from 1.0 up to
+  # 1.2 are enabled.
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+
+  # SSL configuration. The default is off.
+  # List of root certificates for HTTPS server verifications
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+
+  # Certificate for SSL client authentication
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+
+  # Client certificate key
+  #ssl.key: "/etc/pki/client/cert.key"
+
+  # Optional passphrase for decrypting the certificate key.
+  #ssl.key_passphrase: ''
+
+  # Configure cipher suites to be used for SSL connections
+  #ssl.cipher_suites: []
+
+  # Configure curve types for ECDHE-based cipher suites
+  #ssl.curve_types: []
+
+
+
+#================================ Logging ======================================
+# There are four options for the log output: file, stderr, syslog, eventlog
+# The file output is the default.
+
+# Sets log level. The default log level is info.
+# Available log levels are: error, warning, info, debug
+logging.level: info
+
+# Enable debug output for selected components. To enable all selectors use ["*"]
+# Other available selectors are "beat", "publish", "service"
+# Multiple selectors can be chained.
+#logging.selectors: [ ]
+
+# Send all logging output to syslog. The default is false.
+#logging.to_syslog: false
+
+# Send all logging output to Windows Event Logs. The default is false.
+#logging.to_eventlog: false
+
+# If enabled, filebeat periodically logs its internal metrics that have changed
+# in the last period. For each metric that changed, the delta from the value at
+# the beginning of the period is logged. Also, the total values for
+# all non-zero internal metrics are logged on shutdown. The default is true.
+#logging.metrics.enabled: true
+
+# The period after which to log the internal metrics. The default is 30s.
+#logging.metrics.period: 30s
+
+# Logging to rotating files. Set logging.to_files to false to disable logging to
+# files.
+logging.to_files: true
+logging.files:
+  # Configure the path where the logs are written. The default is the logs directory
+  # under the home path (the binary location).
+  path: /var/log/filebeat
+
+  # The name of the files where the logs are written to.
+  name: filebeat
+
+  # Configure log file size limit. If limit is reached, log file will be
+  # automatically rotated
+  #rotateeverybytes: 10485760 # = 10MB
+
+  # Number of rotated log files to keep. Oldest files will be deleted first.
+  keepfiles: 7
+
+  # The permissions mask to apply when rotating log files. The default value is 0600.
+  # Must be a valid Unix-style file permissions mask expressed in octal notation.
+  permissions: 0600
+
+  # Enable log file rotation on time intervals in addition to size-based rotation.
+  # Intervals must be at least 1s. Values of 1m, 1h, 24h, 7*24h, 30*24h, and 365*24h
+  # are boundary-aligned with minutes, hours, days, weeks, months, and years as
+  # reported by the local system clock. All other intervals are calculated from the
+  # Unix epoch. Defaults to disabled.
+  #interval: 0
+
+  # Rotate existing logs on startup rather than appending to the existing
+  # file. Defaults to true.
+  # rotateonstartup: true
+
+# Set to true to log messages in JSON format.
+#logging.json: false
+
+
+#============================== Xpack Monitoring ===============================
+# filebeat can export internal metrics to a central Elasticsearch monitoring
+# cluster.  This requires xpack monitoring to be enabled in Elasticsearch.  The
+# reporting is disabled by default.
+
+# Set to true to enable the monitoring reporter.
+#monitoring.enabled: false
+
+# Uncomment to send the metrics to Elasticsearch. Most settings from the
+# Elasticsearch output are accepted here as well.
+# Note that the settings should point to your Elasticsearch *monitoring* cluster.
+# Any setting that is not set is automatically inherited from the Elasticsearch
+# output configuration, so if you have the Elasticsearch output configured such
+# that it is pointing to your Elasticsearch monitoring cluster, you can simply
+# uncomment the following line.
+#monitoring.elasticsearch:
+
+  # Array of hosts to connect to.
+  # Scheme and port can be left out and will be set to the default (http and 9200)
+  # In case you specify and additional path, the scheme is required: http://localhost:9200/path
+  # IPv6 addresses should always be defined as: https://[2001:db8::1]:9200
+  #hosts: ["localhost:9200"]
+
+  # Set gzip compression level.
+  #compression_level: 0
+
+  # Optional protocol and basic auth credentials.
+  #protocol: "https"
+  #username: "beats_system"
+  #password: "changeme"
+
+  # Dictionary of HTTP parameters to pass within the URL with index operations.
+  #parameters:
+    #param1: value1
+    #param2: value2
+
+  # Custom HTTP headers to add to each request
+  #headers:
+  #  X-My-Header: Contents of the header
+
+  # Proxy server url
+  #proxy_url: http://proxy:3128
+
+  # The number of times a particular Elasticsearch index operation is attempted. If
+  # the indexing operation doesn't succeed after this many retries, the events are
+  # dropped. The default is 3.
+  #max_retries: 3
+
+  # The maximum number of events to bulk in a single Elasticsearch bulk API index request.
+  # The default is 50.
+  #bulk_max_size: 50
+
+  # The number of seconds to wait before trying to reconnect to Elasticsearch
+  # after a network error. After waiting backoff.init seconds, the Beat
+  # tries to reconnect. If the attempt fails, the backoff timer is increased
+  # exponentially up to backoff.max. After a successful connection, the backoff
+  # timer is reset. The default is 1s.
+  #backoff.init: 1s
+
+  # The maximum number of seconds to wait before attempting to connect to
+  # Elasticsearch after a network error. The default is 60s.
+  #backoff.max: 60s
+
+  # Configure HTTP request timeout before failing an request to Elasticsearch.
+  #timeout: 90
+
+  # Use SSL settings for HTTPS.
+  #ssl.enabled: true
+
+  # Configure SSL verification mode. If `none` is configured, all server hosts
+  # and certificates will be accepted. In this mode, SSL based connections are
+  # susceptible to man-in-the-middle attacks. Use only for testing. Default is
+  # `full`.
+  #ssl.verification_mode: full
+
+  # List of supported/valid TLS versions. By default all TLS versions from 1.0 up to
+  # 1.2 are enabled.
+  #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+
+  # SSL configuration. The default is off.
+  # List of root certificates for HTTPS server verifications
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+
+  # Certificate for SSL client authentication
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+
+  # Client certificate key
+  #ssl.key: "/etc/pki/client/cert.key"
+
+  # Optional passphrase for decrypting the certificate key.
+  #ssl.key_passphrase: ''
+
+  # Configure cipher suites to be used for SSL connections
+  #ssl.cipher_suites: []
+
+  # Configure curve types for ECDHE-based cipher suites
+  #ssl.curve_types: []
+
+  # Configure what types of renegotiation are supported. Valid options are
+  # never, once, and freely. Default is never.
+  #ssl.renegotiation: never
+
+  #metrics.period: 10s
+  #state.period: 1m
+
+#================================ HTTP Endpoint ======================================
+# Each beat can expose internal metrics through a HTTP endpoint. For security
+# reasons the endpoint is disabled by default. This feature is currently experimental.
+# Stats can be access through http://localhost:5066/stats . For pretty JSON output
+# append ?pretty to the URL.
+
+# Defines if the HTTP endpoint is enabled.
+#http.enabled: false
+
+# The HTTP endpoint will bind to this hostname or IP address. It is recommended to use only localhost.
+#http.host: localhost
+
+# Port on which the HTTP endpoint will bind. Default is 5066.
+#http.port: 5066
+
+#============================= Process Security ================================
+
+# Enable or disable seccomp system call filtering on Linux. Default is enabled.
+#seccomp.enabled: true
+
+#================================= Migration ==================================
+
+# This allows to enable 6.7 migration aliases
+#migration.6_to_7.enabled: false

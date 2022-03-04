@@ -1,0 +1,25 @@
+---
+
+- name: TEMPLATE | Copy filebeat configuration template
+  template:
+    src: filebeat.yml.j2
+    dest: "{{ filebeat_configuration_path }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart filebeat
+
+- name: TEMPLATE | Copy filebeat nginx module
+  template:
+    src: module-nginx.yml.j2
+    dest: "{{ filebeat_nginx_module_path }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart filebeat
+
+- name: SERVICE | Start filebeat and enable on boot
+  service:
+    name: filebeat
+    state: started
+    enabled: true

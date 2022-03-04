@@ -1,2 +1,18 @@
 ---
-# tasks file for roles/methorz.filebeat
+
+##
+# Import variable definitions and defaults
+##
+- name: IMPORT_TASKS | Setup Variable definitions / defaults
+  import_tasks: setup-variables.yml
+
+##
+# Setup the OS based on family
+##
+- name: IMPORT_TASKS | Setup filebeat for OS
+  import_tasks: "setup-Debian.yml"
+  when:
+    - ansible_facts['os_family'] == 'Debian'
+
+- name: IMPORT_TASKS | Setup filebeat and configure
+  import_tasks: "setup-filebeat.yml"

@@ -1,0 +1,35 @@
+---
+#
+# Setup all required packages
+#
+- block:
+  - name: APT | Install percona apt key repository prerequisites
+    apt:
+      name:
+        - gnupg
+        - ca-certificates
+        - apt-transport-https
+      state: present
+
+  - name: APT | Add the elastic search apt key
+    apt_key:
+      url: "{{ filebeat_elastic_search_keyserver }}"
+      id: "{{ filebeat_elastic_search_key_id }}"
+      state: present
+
+  - name: APT | Add the filebeat repository
+    apt_repository:
+      repo: "{{ filebeat_elastic_search_repository }}"
+      state: present
+
+  - name: APT | Updating the apt cache
+      apt:
+        update_cache: yes
+
+  - name: APT | Make sure filebeat is installed (if configured)
+    apt:
+      name: "{{ filebeat_package }}"
+      state: "{{ filebeat_package_mode }}"
+      update_cache: yes
+
+  when: filebeat_enabled
